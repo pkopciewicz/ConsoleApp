@@ -21,10 +21,15 @@
             while (!streamReader.EndOfStream)
             {
                 var line = streamReader.ReadLine();
-                importedLines.Add(line);
+                //added empty line verification
+                if (line!="")
+                {
+                    importedLines.Add(line);
+                }
+                
             }
 
-            for (int i = 0; i <= importedLines.Count; i++)
+            for (int i = 0; i < importedLines.Count; i++) // changed condition sign on <
             {
                 var importedLine = importedLines[i];
                 var values = importedLine.Split(';');
@@ -35,12 +40,15 @@
                 importedObject.ParentName = values[3];
                 importedObject.ParentType = values[4];
                 importedObject.DataType = values[5];
-                importedObject.IsNullable = values[6];
+                if(values.Length > 6) 
+                {
+                    importedObject.IsNullable = values[6];
+                }           
                 ((List<ImportedObject>)ImportedObjects).Add(importedObject);
             }
-
             // clear and correct imported data
-            foreach (var importedObject in ImportedObjects)
+            foreach (var importedObject in ImportedObjects.Skip(1))// added .Skip(1) function to prevent reading first element of
+                                                                   // List which contains NULL values - accual List content starts with 1 index
             {
                 importedObject.Type = importedObject.Type.Trim().Replace(" ", "").Replace(Environment.NewLine, "").ToUpper();
                 importedObject.Name = importedObject.Name.Trim().Replace(" ", "").Replace(Environment.NewLine, "");
@@ -65,14 +73,14 @@
                 }
             }
 
-            foreach (var database in ImportedObjects)
+            foreach (var database in ImportedObjects.Skip(1))//again added Skip(1)
             {
                 if (database.Type == "DATABASE")
                 {
                     Console.WriteLine($"Database '{database.Name}' ({database.NumberOfChildren} tables)");
 
                     // print all database's tables
-                    foreach (var table in ImportedObjects)
+                    foreach (var table in ImportedObjects.Skip(1))//again added Skip(1)
                     {
                         if (table.ParentType.ToUpper() == database.Type)
                         {
@@ -81,7 +89,7 @@
                                 Console.WriteLine($"\tTable '{table.Schema}.{table.Name}' ({table.NumberOfChildren} columns)");
 
                                 // print all table's columns
-                                foreach (var column in ImportedObjects)
+                                foreach (var column in ImportedObjects.Skip(1))//again added Skip(1)
                                 {
                                     if (column.ParentType.ToUpper() == table.Type)
                                     {
